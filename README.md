@@ -20,25 +20,11 @@ A lightweight desktop GUI for opening futures positions on Bybit — built with 
 - Hedge mode support (positionIdx 1/2)
 - Works with Bybit Unified Trading Account (UTA)
 
-## Screenshot
+## Screenshots
 
-```
-┌─────────────────────────────────────────┐
-│        Bybit. Futures Mini Terminal      │
-│                                         │
-│  Direction     │ LONG          ▼        │
-│  Ticker USDT   │ BTC                    │
-│  Position:     │ USDT  10.0  Leverage 10│
-│  Entry price   │ 0     (0 = market)     │
-│  Stop loss %   │ 1.0                    │
-│  Take profit % │ 5.0                    │
-│  Take profit 1:│ Vol%  30  Offset% 1.5  │
-│  Take profit 2:│ Vol%  50  Offset% 3.0  │
-│  Trailing stop:│       Offset%  1.5     │
-│                                         │
-│              [ Preview ]               │
-└─────────────────────────────────────────┘
-```
+| Input form | Result on exchange |
+|:---:|:---:|
+| ![Input form](docs/cmt_face.png) | ![Position on Bybit](docs/cmt_position.png) |
 
 ## Requirements
 
