@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.csv
+.idea/
+.claude/
+.vscode/
+CLAUDE.md
+prompt.md
