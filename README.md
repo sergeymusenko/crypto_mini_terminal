@@ -4,7 +4,7 @@ A lightweight desktop GUI for opening futures positions on Bybit — built with 
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue)
 ![PyQt](https://img.shields.io/badge/GUI-PyQt5%20%2F%20PyQt6-green)
-![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey)
 ![Exchange](https://img.shields.io/badge/Exchange-Bybit-orange)
 
 ---
@@ -70,6 +70,26 @@ python main.py
 4. Click **Yes** to place the orders on the exchange
 
 Press `Esc` at any time to exit.
+
+## Running on Windows
+
+The app is fully cross-platform. No code changes required.
+
+1. Install [Python 3.8+](https://www.python.org/downloads/windows/) — check **"Add Python to PATH"** during installation
+2. Open Command Prompt or PowerShell in the project folder:
+   ```bat
+   git clone https://github.com/sergeymusenko/crypto_mini_terminal.git
+   cd crypto_mini_terminal
+   pip install -r requirements.txt
+   ```
+3. Copy `.env.example` to `.env` and fill in your API keys:
+   ```bat
+   copy .env.example .env
+   ```
+4. Run:
+   ```bat
+   python main.py
+   ```
 
 ## Order logic
 
