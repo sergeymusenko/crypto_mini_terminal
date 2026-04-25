@@ -13,6 +13,7 @@ from src.api.bybit import BybitClient
 from src.logic.validator import validate_inputs, ValidationError
 from src.logic.calculator import calculate
 from src.ui.confirmation_screen import ConfirmationScreen
+from src.ui.success_screen import SuccessScreen
 from src.logger import log_order
 
 class _EnterFilter(QObject):
@@ -276,12 +277,18 @@ class MainWindow(QtWidgets.QWidget):
         self._confirmation.cancelled.connect(self._on_cancelled)
         self._confirmation.hide()
 
+        # Success screen (hidden until order is placed successfully)
+        self._success_screen = SuccessScreen()
+        self._success_screen.ok_clicked.connect(self._on_success_ok)
+        self._success_screen.hide()
+
         # Assemble main layout
         main = QtWidgets.QVBoxLayout()
         main.setContentsMargins(20, 20, 20, 20)
         main.setSpacing(12)
         main.addWidget(self._form_widget)
         main.addWidget(self._confirmation)
+        main.addWidget(self._success_screen)
         self.setLayout(main)
         self.setMinimumWidth(480)
 
@@ -373,13 +380,24 @@ class MainWindow(QtWidgets.QWidget):
     def _on_confirmed(self):
         log_order(self._current_plan)
         self._confirmation.hide()
-        self._form_widget.show()
-        self._restore_submit_btn()
         try:
             client = BybitClient()
             client.place_orders(self._current_plan, dry_run=False)
+            self._show_success(self._current_plan.symbol)
         except Exception as e:
+            self._form_widget.show()
+            self._restore_submit_btn()
             self._show_error(str(e))
+
+    def _show_success(self, symbol: str):
+        ticker = symbol[:-4] if symbol.endswith("USDT") else symbol
+        self._success_screen.set_ticker(ticker)
+        self._success_screen.show()
+
+    def _on_success_ok(self):
+        self._success_screen.hide()
+        self._form_widget.show()
+        self._restore_submit_btn()
 
     def _on_cancelled(self):
         self._confirmation.hide()
