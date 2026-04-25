@@ -24,7 +24,7 @@ def load_config():
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'icon.jpg')
+    icon_path = os.path.join(os.path.dirname(__file__), 'assets', 'bybit.png')
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))
     config = load_config()
