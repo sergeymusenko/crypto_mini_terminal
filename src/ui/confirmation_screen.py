@@ -116,4 +116,5 @@ class ConfirmationScreen(QtWidgets.QWidget):
             row(self._t("confirm_tp1", "TP1"), f"{_fmt(plan.tp1_price)}  ({plan.tp1_offset_pct}%,  объём {plan.tp1_size_pct}%)")
             row(self._t("confirm_tp2", "TP2"), f"{_fmt(plan.tp2_price)}  ({plan.tp2_offset_pct}%,  объём {plan.tp2_size_pct}%)")
             row(self._t("confirm_trailing", "Трейлинг стоп"),
-                f"безубыток {_fmt(plan.breakeven_price)}  (активация {_fmt(plan.trailing_active_price)})")
+                f"{self._t('confirm_breakeven', 'безубыток')} {_fmt(plan.breakeven_price)}"
+                f"  ({self._t('confirm_activation', 'активация')} {_fmt(plan.trailing_active_price)})")

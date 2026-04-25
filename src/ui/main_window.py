@@ -9,7 +9,6 @@ except ImportError:
 
 import math
 
-from src.api.bybit import BybitClient
 from src.logic.validator import validate_inputs, ValidationError
 from src.logic.calculator import calculate
 from src.ui.confirmation_screen import ConfirmationScreen
@@ -57,17 +56,18 @@ _FIELD_WIDGETS = {
 
 
 class MainWindow(QtWidgets.QWidget):
-    def __init__(self, config):
+    def __init__(self, config, client_class):
         super().__init__()
         self.config = config
         self._ui = config.get("ui", {})
+        self._client_class = client_class
         self._setup_ui()
 
     def _t(self, key, fallback=""):
         return self._ui.get(key, fallback)
 
     def _setup_ui(self):
-        self.setWindowTitle(self._t("window_title", "Bybit. Futures Mini Terminal"))
+        self.setWindowTitle(self.config.get("window_title", "Futures Mini Terminal"))
 
         try:
             ALIGN_RIGHT = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
@@ -110,17 +110,24 @@ class MainWindow(QtWidgets.QWidget):
         self.direction_combo.currentTextChanged.connect(self._update_direction_color)
         self._update_direction_color(self.direction_combo.currentText())
 
-        self.margin_type_label = QtWidgets.QLineEdit("—")
-        self.margin_type_label.setReadOnly(True)
-        try:
-            self.margin_type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        except AttributeError:
-            self.margin_type_label.setAlignment(Qt.AlignCenter)
+        if self.config.get("margin_mode_editable", False):
+            self.margin_type_combo = QtWidgets.QComboBox()
+            for opt in [self._t("margin_isolated", "Isolated"), self._t("margin_cross", "Cross")]:
+                self.margin_type_combo.addItem(opt)
+            margin_widget = self.margin_type_combo
+        else:
+            self.margin_type_label = QtWidgets.QLineEdit(self._t("margin_type_default", "—"))
+            self.margin_type_label.setReadOnly(True)
+            try:
+                self.margin_type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            except AttributeError:
+                self.margin_type_label.setAlignment(Qt.AlignCenter)
+            margin_widget = self.margin_type_label
 
         form.addWidget(QtWidgets.QLabel(self._t("direction_label")), r, 0, ALIGN_RIGHT)
         form.addWidget(self.direction_combo, r, 1, 1, 2)  # spans cols 1-2 = same width as "sublabel + left-input"
         form.addWidget(QtWidgets.QLabel(self._t("margin_type_sublabel", "Маржа")), r, 3, ALIGN_RIGHT)
-        form.addWidget(self.margin_type_label, r, 4)
+        form.addWidget(margin_widget, r, 4)
         r += 1
 
         # --- Row 1: Ticker (spans cols 1-4, full width) ---
@@ -258,7 +265,7 @@ class MainWindow(QtWidgets.QWidget):
         self.error_label.setStyleSheet("color: red;")
         self.error_label.setAlignment(ALIGN_CENTER)
         self.error_label.setWordWrap(True)
-        self.error_label.hide()
+        self.error_label.setMinimumHeight(self.error_label.fontMetrics().height())
 
         # Esc to close (Логика теперь вынесена в keyPressEvent для проверки фокуса)
 
@@ -278,7 +285,7 @@ class MainWindow(QtWidgets.QWidget):
         self._confirmation.hide()
 
         # Success screen (hidden until order is placed successfully)
-        self._success_screen = SuccessScreen()
+        self._success_screen = SuccessScreen(ui=self._ui)
         self._success_screen.ok_clicked.connect(self._on_success_ok)
         self._success_screen.hide()
 
@@ -327,11 +334,17 @@ class MainWindow(QtWidgets.QWidget):
         QTimer.singleShot(0, self._fetch_margin_mode)
 
     def _fetch_margin_mode(self):
+        if self.config.get("margin_mode_editable", False):
+            return  # user selects margin mode manually
         try:
-            mode = BybitClient().get_margin_mode()
-            self.margin_type_label.setText(mode)
+            mode = self._client_class().get_margin_mode()
+            display = {
+                "cross":    self._t("margin_cross",    "Cross"),
+                "isolated": self._t("margin_isolated", "Isolated"),
+            }.get(mode.lower(), mode)
+            self.margin_type_label.setText(display)
         except Exception:
-            self.margin_type_label.setText("н/д")
+            self.margin_type_label.setText(self._t("margin_type_unavailable", "н/д"))
 
     def keyPressEvent(self, event):
         """Реализация логики Esc: убрать фокус или закрыть приложение."""
@@ -371,7 +384,7 @@ class MainWindow(QtWidgets.QWidget):
 
     def _show_confirmation(self, plan):
         self._current_plan = plan
-        self.error_label.hide()
+        self.error_label.setText("")
         self._form_widget.hide()
         self._confirmation.set_plan(plan)
         self._confirmation.show()
@@ -381,7 +394,7 @@ class MainWindow(QtWidgets.QWidget):
         log_order(self._current_plan)
         self._confirmation.hide()
         try:
-            client = BybitClient()
+            client = self._client_class()
             client.place_orders(self._current_plan, dry_run=False)
             self._show_success(self._current_plan.symbol)
         except Exception as e:
@@ -406,7 +419,6 @@ class MainWindow(QtWidgets.QWidget):
 
     def _show_error(self, text, field=None):
         self.error_label.setText(text)
-        self.error_label.show()
         if field and field in _FIELD_WIDGETS:
             widget = getattr(self, _FIELD_WIDGETS[field])
             widget.setFocus()
@@ -425,7 +437,7 @@ class MainWindow(QtWidgets.QWidget):
         return {
             "symbol": symbol,
             "direction": self.direction_combo.currentText(),
-            "margin_type": self.margin_type_label.text(),
+            "margin_type": self.margin_type_combo.currentText() if hasattr(self, "margin_type_combo") else self.margin_type_label.text(),
             "position_size": self.position_size_input.value(),
             "leverage": self.leverage_input.value(),
             "entry_price": entry_price,
@@ -442,7 +454,7 @@ class MainWindow(QtWidgets.QWidget):
         }
 
     def _on_submit(self):
-        self.error_label.hide()
+        self.error_label.setText("")
 
         data = self._collect_data()
 
@@ -455,10 +467,10 @@ class MainWindow(QtWidgets.QWidget):
 
         self.submit_btn.clearFocus()
         self.submit_btn.setEnabled(False)
-        self.submit_btn.setText("...")
+        self.submit_btn.setText(self._t("submit_loading", "..."))
         success = False
         try:
-            client = BybitClient()
+            client = self._client_class()
 
             # Validate ticker exists on Bybit
             try:
@@ -470,6 +482,18 @@ class MainWindow(QtWidgets.QWidget):
                     field="symbol",
                 )
                 return
+
+            # Check leverage against exchange maximum
+            max_lev_raw = instrument.get("leverageFilter", {}).get("maxLeverage")
+            if max_lev_raw:
+                max_lev = float(max_lev_raw)
+                if data["leverage"] > max_lev:
+                    self._show_error(
+                        self._t("error_leverage_too_high", "Плечо {lev}x превышает максимум {max}x для {symbol}")
+                        .format(lev=int(data["leverage"]), max=int(max_lev), symbol=data["symbol"]),
+                        field="leverage",
+                    )
+                    return
 
             # Reject if same-direction position already open (hedging opposite side is allowed)
             existing_side = client.get_open_position_side(data["symbol"])

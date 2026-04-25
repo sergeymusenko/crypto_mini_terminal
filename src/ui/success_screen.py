@@ -1,29 +1,34 @@
+import subprocess
+import sys
+
 try:
     from PyQt6 import QtWidgets
-    from PyQt6.QtCore import Qt, QUrl
-    from PyQt6.QtGui import QDesktopServices
+    from PyQt6.QtCore import Qt
     from PyQt6.QtCore import pyqtSignal as Signal
 except ImportError:
     from PyQt5 import QtWidgets
-    from PyQt5.QtCore import Qt, QUrl
-    from PyQt5.QtGui import QDesktopServices
+    from PyQt5.QtCore import Qt
     from PyQt5.QtCore import pyqtSignal as Signal
 
 
 class SuccessScreen(QtWidgets.QWidget):
     ok_clicked = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, ui: dict = None, parent=None):
         super().__init__(parent)
+        self._ui = ui or {}
         self._ticker = ""
         self._setup_ui()
+
+    def _t(self, key, fallback=""):
+        return self._ui.get(key, fallback)
 
     def _setup_ui(self):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(20, 40, 20, 20)
         layout.setSpacing(20)
 
-        success_label = QtWidgets.QLabel("Success")
+        success_label = QtWidgets.QLabel(self._t("success_title", "Success"))
         font = success_label.font()
         font.setBold(True)
         font.setPointSize(24)
@@ -33,11 +38,11 @@ class SuccessScreen(QtWidgets.QWidget):
         except AttributeError:
             success_label.setAlignment(Qt.AlignCenter)
 
-        self._open_btn = QtWidgets.QPushButton("Открыть терминал биржи")
+        self._open_btn = QtWidgets.QPushButton(self._t("success_open_exchange", "Открыть терминал биржи"))
         self._open_btn.setMinimumWidth(200)
         self._open_btn.clicked.connect(self._open_exchange)
 
-        ok_btn = QtWidgets.QPushButton("Ok")
+        ok_btn = QtWidgets.QPushButton(self._t("success_ok", "Ok"))
         ok_btn.setMinimumWidth(140)
         ok_btn.clicked.connect(self.ok_clicked)
 
@@ -61,6 +66,11 @@ class SuccessScreen(QtWidgets.QWidget):
         self._ticker = ticker
 
     def _open_exchange(self):
-        symbol = self._ticker if self._ticker.endswith("USDT") else self._ticker + "USDT"
-        url = f"https://www.bybit.com/trade/usdt/{symbol}"
-        QDesktopServices.openUrl(QUrl(url))
+        template = self._t("exchange_url_template", "https://www.bybit.com/trade/usdt/{ticker}USDT")
+        url = template.format(ticker=self._ticker, ticker_lower=self._ticker.lower())
+        subprocess.Popen(
+            ["xdg-open", url],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )

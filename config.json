@@ -14,12 +14,13 @@
   "hedge_mode": true,
 
   "ui": {
-    "window_title": "Bybit. Futures Mini Terminal",
     "direction_label": "Направление",
     "direction_options": ["LONG", "SHORT"],
     "ticker_label": "Тикер к USDT",
     "ticker_placeholder": "BTC, ETH, ...",
     "margin_type_sublabel": "Маржа",
+    "margin_cross": "Cross",
+    "margin_isolated": "Isolated",
     "size_leverage_label": "Позиция:",
     "size_sublabel": "USDT",
     "leverage_sublabel": "Плечо",
@@ -51,11 +52,20 @@
     "confirm_tp1": "TP1",
     "confirm_tp2": "TP2",
     "confirm_trailing": "Трейлинг стоп",
-    "error_invalid_ticker": "Тикер {symbol} не найден на Bybit",
+    "confirm_breakeven": "безубыток",
+    "confirm_activation": "активация",
+    "error_invalid_ticker": "Тикер {symbol} на бирже не найден",
+    "error_leverage_too_high": "Плечо {lev}x превышает максимум {max}x для {symbol}",
     "error_position_exists": "По {symbol} уже открыта позиция {side}. Закройте её перед входом.",
     "error_insufficient_funds": "Недостаточно средств: нужно {needed:.2f} USDT, доступно {available:.2f} USDT",
     "error_min_order_qty": "Объём позиции слишком мал: минимум {min_qty} монет ≈ {min_notional:.2f} USDT. Увеличьте позицию или плечо.",
     "error_min_notional": "Минимальная сумма позиции: {min_val:.2f} USDT",
-    "confirm_rounded": "округлено"
+    "confirm_rounded": "округлено",
+    "success_title": "Success",
+    "success_open_exchange": "Открыть терминал биржи",
+    "success_ok": "Ok",
+    "margin_type_default": "—",
+    "margin_type_unavailable": "н/д",
+    "submit_loading": "..."
   }
 }

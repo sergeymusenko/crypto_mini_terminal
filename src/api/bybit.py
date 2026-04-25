@@ -19,7 +19,7 @@ class BybitClient:
         resp = self._session.get_instruments_info(category="linear", symbol=symbol)
         instruments = resp.get("result", {}).get("list", [])
         if not instruments:
-            raise ValueError(f"Тикер {symbol} не найден на Bybit")
+            raise ValueError(f"Symbol {symbol} not found on Bybit")
         return instruments[0]
 
     def get_last_price(self, symbol: str) -> float:
@@ -27,7 +27,7 @@ class BybitClient:
         resp = self._session.get_tickers(category="linear", symbol=symbol)
         items = resp.get("result", {}).get("list", [])
         if not items:
-            raise ValueError(f"Не удалось получить цену для {symbol}")
+            raise ValueError(f"Failed to get price for {symbol}")
         return float(items[0]["lastPrice"])
 
     def get_open_position_side(self, symbol: str) -> str | None:
@@ -44,14 +44,14 @@ class BybitClient:
         """Return current account margin mode as a short label."""
         resp = self._session.get_account_info()
         mode = resp.get("result", {}).get("marginMode", "")
-        return {"REGULAR_MARGIN": "Кросс", "ISOLATED_MARGIN": "Изолир", "PORTFOLIO_MARGIN": "Portfolio"}.get(mode, mode or "—")
+        return {"REGULAR_MARGIN": "cross", "ISOLATED_MARGIN": "isolated", "PORTFOLIO_MARGIN": "portfolio"}.get(mode, mode or "—")
 
     def get_available_balance(self) -> float:
         """Return available USDT balance from UNIFIED account."""
         resp = self._session.get_wallet_balance(accountType="UNIFIED")
         accounts = resp.get("result", {}).get("list", [])
         if not accounts:
-            raise ValueError("Не удалось получить баланс: пустой ответ")
+            raise ValueError("Failed to get balance: empty response")
         account = accounts[0]
         # account-level total available balance
         val = account.get("totalAvailableBalance", "")
@@ -63,7 +63,7 @@ class BybitClient:
                 avail = coin.get("availableToWithdraw") or coin.get("walletBalance", "")
                 if avail:
                     return float(avail)
-        raise ValueError("Не удалось получить баланс USDT")
+        raise ValueError("Failed to get USDT balance")
 
     def place_orders(self, plan: OrderPlan, dry_run: bool = True) -> None:
         """Build and execute orders for the given plan.

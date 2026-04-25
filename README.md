@@ -30,7 +30,6 @@ A lightweight desktop GUI for opening futures positions on Bybit — built with 
 
 - Python 3.8+
 - PyQt5 or PyQt6
-- Bybit account with API access (Unified Trading Account)
 
 ## Installation
 
@@ -43,25 +42,53 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Copy `.env.example` to `.env` and fill in your Bybit API credentials:
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
 ```
+
+Fill in the credentials for the exchange(s) you use.
+
+> **Security:** Never grant **withdrawal permissions** to API keys used by this app. Always restrict access to a **whitelist of trusted IP addresses**.
+
+### Bybit
 
 ```env
 BYBIT_API_KEY="your_api_key_here"
 BYBIT_API_SECRET="your_api_secret_here"
 ```
 
-> API keys must have **Futures trading** permission enabled on Bybit.
+API keys: [bybit.com](https://www.bybit.com) → avatar → API → **API Management** → Create New Key.
+> Permissions required: **Futures trading** (Unified Trading Account).
+
+### OKX
+
+```env
+OKX_API_KEY="your_api_key_here"
+OKX_API_SECRET="your_api_secret_here"
+OKX_PASSPHRASE="your_passphrase_here"
+OKX_DEMO=true
+```
+
+API keys: [okx.com](https://www.okx.com) → avatar → API → Create API Key.
+For demo trading: create keys in the **Demo Trading** section (separate from live keys).
+> Permissions required: **Trade**.
+
+Set `OKX_DEMO=false` to switch to live trading (use live API keys accordingly).
 
 Default trading parameters are stored in `config.json` and can be edited directly.
 
 ## Usage
 
+**Bybit:**
 ```bash
-python main.py
+python bybit.py
+```
+
+**OKX:**
+```bash
+python okx.py
 ```
 
 1. Fill in the trading form (direction, ticker, position size, leverage, SL/TP levels)
@@ -88,7 +115,7 @@ The app is fully cross-platform. No code changes required.
    ```
 4. Run:
    ```bat
-   python main.py
+   python bybit.py
    ```
 
 ## Order logic
@@ -106,7 +133,7 @@ The app is fully cross-platform. No code changes required.
 
 ```
 crypto_mini_terminal/
-├── main.py               # Entry point
+├── bybit.py               # Entry point
 ├── config.json           # Default parameters
 ├── requirements.txt
 ├── .env.example

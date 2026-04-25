@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+"""\
+Bybit Futures Mini Terminal
+
+Entry point for Bybit crypto exchange. Set up .env file!
+"""
+
+__part__     = 'Main script'
+__author__   = "Sergey V Musenko"
+__email__    = "sergey@musenko.com"
+__copyright__= "© 2026, musenko.com"
+__license__  = "MIT"
+__credits__  = ["Sergey Musenko"]
+__date__     = "2026-04-25"
+__version__  = "0.1"
+__status__   = "test"
+
 import sys
 import json
 import os
@@ -14,6 +30,7 @@ except ImportError:
     from PyQt5.QtGui import QIcon
 
 from src.ui.main_window import MainWindow
+from src.api.bybit import BybitClient
 
 
 def load_config():
@@ -28,7 +45,9 @@ def main():
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))
     config = load_config()
-    window = MainWindow(config)
+    config["window_title"] = "Bybit. Futures Mini Terminal"
+    config.setdefault("ui", {})["exchange_url_template"] = "https://www.bybit.com/trade/usdt/{ticker}USDT"
+    window = MainWindow(config, client_class=BybitClient)
     window.show()
     sys.exit(app.exec())
 
