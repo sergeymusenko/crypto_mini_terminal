@@ -12,6 +12,7 @@ class BybitClient:
             testnet=False,
             api_key=api_key,
             api_secret=api_secret,
+            recv_window=10000,
         )
 
     def validate_ticker(self, symbol: str) -> dict:
